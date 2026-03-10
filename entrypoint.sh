@@ -30,15 +30,14 @@ if [ -z "$UUID" ]; then
     log_info "Generated UUID: $UUID"
 fi
 
-WSPATH="/$UUID"
-WSPATH_LINK="/$UUID?ed=2048"
-WSPATH_ENCODED="%2F${UUID}%3Fed%3D2048"
+XHTTP_PATH="/$UUID"
+XHTTP_PATH_ENCODED="%2F${UUID}"
 PORT=8080
 
 log_info "---------------------------------------------------"
-log_info "Starting VLESS-WS-ARGO Node"
+log_info "Starting VLESS-xHTTP-ARGO Node (Xray-core)"
 log_info "UUID: $UUID"
-log_info "WSPATH: $WSPATH"
+log_info "XHTTP Path: $XHTTP_PATH"
 
 if [ -n "$ECH_CONFIG" ]; then
     if [ "$ECH_CONFIG" = "true" ]; then
@@ -65,53 +64,56 @@ else
 fi
 log_info "---------------------------------------------------"
 
-# Generate sing-box configuration
+# Generate Xray configuration
 cat > config.json <<EOF
 {
   "log": {
-    "level": "info",
-    "timestamp": true
+    "loglevel": "info"
   },
   "inbounds": [
     {
-      "type": "vless",
-      "tag": "vless-in",
+      "port": $PORT,
       "listen": "127.0.0.1",
-      "listen_port": $PORT,
-      "users": [
-        {
-          "uuid": "$UUID",
-          "flow": ""
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "$UUID",
+            "level": 0
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "none",
+        "xhttpSettings": {
+          "path": "$XHTTP_PATH",
+          "mode": "auto"
         }
-      ],
-      "transport": {
-        "type": "ws",
-        "path": "$WSPATH",
-        "early_data_header_name": "Sec-WebSocket-Protocol"
       }
     }
   ],
   "outbounds": [
     {
-      "type": "direct",
-      "tag": "direct"
+      "protocol": "freedom"
     }
   ]
 }
 EOF
 
-log_info "Sing-box configuration generated."
+log_info "Xray configuration generated."
 
-# Start sing-box in background
-log_info "Starting sing-box..."
-sing-box run -c config.json &
-SINGBOX_PID=$!
+# Start Xray in background
+log_info "Starting Xray..."
+xray run -c config.json &
+XRAY_PID=$!
 
-# Wait for sing-box to initialize
+# Wait for Xray to initialize
 sleep 2
 
-if ! kill -0 $SINGBOX_PID > /dev/null 2>&1; then
-    log_error "sing-box failed to start."
+if ! kill -0 $XRAY_PID > /dev/null 2>&1; then
+    log_error "Xray failed to start."
     exit 1
 fi
 
@@ -148,7 +150,7 @@ if [ "$USE_QUICK_TUNNEL" = "true" ]; then
     if [ -z "$PUBLIC_HOSTNAME" ]; then
         log_error "Failed to obtain Quick Tunnel URL."
         cat /tmp/cloudflared.log
-        kill $SINGBOX_PID $CLOUDFLARED_PID
+        kill $XRAY_PID $CLOUDFLARED_PID
         exit 1
     fi
 else
@@ -195,14 +197,14 @@ if [ -n "$PUBLIC_HOSTNAME" ]; then
     ALL_LINKS=""
 
     # Output Origin Node (Server is the Argo hostname)
-    LINK="vless://${UUID}@${PUBLIC_HOSTNAME}:443?encryption=none&security=tls&sni=${PUBLIC_HOSTNAME}&fp=chrome&type=ws&host=${PUBLIC_HOSTNAME}&path=${WSPATH_ENCODED}${ECH_STR}#Argo-Origin"
+    LINK="vless://${UUID}@${PUBLIC_HOSTNAME}:443?encryption=none&security=tls&sni=${PUBLIC_HOSTNAME}&fp=chrome&type=xhttp&mode=auto&host=${PUBLIC_HOSTNAME}&path=${XHTTP_PATH_ENCODED}${ECH_STR}&alpn=h3#Argo-Origin"
     echo -e "${YELLOW}Server: ${PUBLIC_HOSTNAME} (Origin)${NC}"
     log_link "$LINK"
     echo ""
     ALL_LINKS="${ALL_LINKS}${LINK}\n"
 
     for DOMAIN in $DOMAINS; do
-        LINK="vless://${UUID}@${DOMAIN}:443?encryption=none&security=tls&sni=${PUBLIC_HOSTNAME}&fp=chrome&type=ws&host=${PUBLIC_HOSTNAME}&path=${WSPATH_ENCODED}${ECH_STR}#${DOMAIN}-Argo"
+        LINK="vless://${UUID}@${DOMAIN}:443?encryption=none&security=tls&sni=${PUBLIC_HOSTNAME}&fp=chrome&type=xhttp&mode=auto&host=${PUBLIC_HOSTNAME}&path=${XHTTP_PATH_ENCODED}${ECH_STR}&alpn=h3#${DOMAIN}-Argo"
         
         echo -e "${YELLOW}Server: ${DOMAIN}${NC}"
         log_link "$LINK"
@@ -226,10 +228,10 @@ else
 fi
 
 # Trap signals to kill both processes
-trap "kill $SINGBOX_PID $CLOUDFLARED_PID; exit" SIGINT SIGTERM
+trap "kill $XRAY_PID $CLOUDFLARED_PID; exit" SIGINT SIGTERM
 
 # Wait for any process to exit
-wait -n $SINGBOX_PID $CLOUDFLARED_PID
+wait -n $XRAY_PID $CLOUDFLARED_PID
 
 # Exit with the status of the process that exited first
 exit $?

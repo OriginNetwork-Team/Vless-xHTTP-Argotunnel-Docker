@@ -3,8 +3,8 @@ FROM alpine:latest
 # Install dependencies
 RUN apk add --no-cache ca-certificates tzdata
 
-# Copy sing-box
-COPY --from=ghcr.io/sagernet/sing-box:latest /usr/local/bin/sing-box /usr/local/bin/sing-box
+# Copy Xray-core
+COPY --from=ghcr.io/XTLS/Xray-core:latest /usr/local/bin/xray /usr/local/bin/xray
 
 # Copy cloudflared
 COPY --from=cloudflare/cloudflared:latest /usr/local/bin/cloudflared /usr/local/bin/cloudflared

@@ -1,24 +1,23 @@
-# Vless-Websocket-Argotunnel-Docker Deployment
+# Vless-xHTTP-Argotunnel-Docker Deployment
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/RATING3PRO/Vless-Websocket-Argotunnel-Docker)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/RATING3PRO/Vless-xHTTP-Argotunnel-Docker)
 
-This project provides a robust, containerized solution for deploying a VLESS-WS node using the sing-box kernel, exposed securely via Cloudflare Tunnel (Argo). It is designed for ease of deployment on PaaS platforms or self-hosted environments without requiring public IP addresses or open ports.
+This project provides a robust, containerized solution for deploying a VLESS-xHTTP node using the **Xray-core** kernel, exposed securely via Cloudflare Tunnel (Argo). It is designed for ease of deployment on PaaS platforms or self-hosted environments without requiring public IP addresses or open ports.
 
 ## Key Features
 
-*   **High-Performance Kernel**: Utilizes `sing-box` as the core for efficient and modern protocol handling.
+*   **High-Performance Kernel**: Utilizes `Xray-core` as the core for efficient and modern protocol handling.
 *   **Secure Tunneling**: Integrates `cloudflared` to establish a secure tunnel to Cloudflare's edge network. No inbound ports need to be opened on the host machine.
-*   **VLESS + WebSocket**: Uses the standard VLESS protocol over WebSocket, ensuring high compatibility with CDNs and firewalls.
-*   **Early Data Support**: Automatically configures WebSocket Early Data (0-RTT) to reduce latency during the handshake process.
+*   **VLESS + xHTTP**: Uses the modern VLESS protocol over **xHTTP** transport, designed for better performance and evasion capabilities compared to traditional WebSocket.
 *   **Automatic Configuration**:
     *   Generates a UUID automatically if one is not provided.
-    *   Enforces a secure WebSocket path format `/{UUID}` to prevent unauthorized scanning.
+    *   Enforces a secure xHTTP path format `/{UUID}` to prevent unauthorized scanning.
 *   **Client Link Generation**:
     *   Automatically generates ready-to-use VLESS links in the container logs upon startup.
     *   **New**: Includes a direct "Origin" node pointing to your Argo hostname.
     *   Links are pre-configured with known optimized Cloudflare domains (Best IPs) for better connectivity.
     *   **Fingerprint Randomization**: Automatically adds `fp=chrome` to simulate Chrome browser traffic.
-    *   Generates a Base64-encoded subscription string aggregating all links for easy import into clients like v2rayN, sing-box, or Clash.
+    *   Generates a Base64-encoded subscription string aggregating all links for easy import into clients like v2rayN, sing-box (with Xray core), or Xray-core based clients.
 *   **ECH Support**: Optional support for Encrypted Client Hello (ECH) to further enhance privacy and censorship resistance.
 *   **IPv6 Edge Support**: Optional support for connecting to Cloudflare Edge via IPv6 (`EDGE_IP_VER=6`), useful in IPv4-restricted environments.
 *   **PaaS Friendly**: Stateless design driven entirely by environment variables, making it suitable for platforms like Railway, Fly.io, or Heroku.
@@ -29,8 +28,8 @@ This project provides a robust, containerized solution for deploying a VLESS-WS 
 
 1.  **Inbound**: The container runs `cloudflared`, which connects outbound to Cloudflare's edge network.
 2.  **Routing**: Traffic destined for your public hostname is routed through the tunnel to the container.
-3.  **Proxy**: `cloudflared` forwards the request to the local `sing-box` instance running on `127.0.0.1:8080`.
-4.  **Processing**: `sing-box` handles the VLESS protocol, decapsulates the traffic, and forwards it to the target destination.
+3.  **Proxy**: `cloudflared` forwards the request to the local `Xray` instance running on `127.0.0.1:8080`.
+4.  **Processing**: `Xray` handles the VLESS protocol over xHTTP, decapsulates the traffic, and forwards it to the target destination.
 
 ## Prerequisites
 
@@ -54,15 +53,15 @@ This project provides a robust, containerized solution for deploying a VLESS-WS 
     version: '3'
     services:
       vless-argo:
-        image: ghcr.io/rating3pro/vless-websocket-argotunnel-docker:latest
+        image: ghcr.io/rating3pro/vless-xhttp-argotunnel-docker:latest
         container_name: vless-argo
         restart: always
         environment:
-      - ARGO_TOKEN=eyJhIjoi...  # Paste your Cloudflare Tunnel Token here
-      - PUBLIC_HOSTNAME=vless.example.com  # Your Tunnel Domain
-      - ECH_CONFIG=true  # Optional: Enable ECH (Encrypted Client Hello)
-      # - EDGE_IP_VER=6 # Optional: Use IPv6 for Argo Tunnel (Default: 4)
-      # - UUID=...  # Optional: Fixed UUID
+          - ARGO_TOKEN=eyJhIjoi...  # Paste your Cloudflare Tunnel Token here
+          - PUBLIC_HOSTNAME=vless.example.com  # Your Tunnel Domain
+          - ECH_CONFIG=true  # Optional: Enable ECH (Encrypted Client Hello)
+          # - EDGE_IP_VER=6 # Optional: Use IPv6 for Argo Tunnel (Default: 4)
+          # - UUID=...  # Optional: Fixed UUID
     ```
 
 2.  Start the container:
@@ -81,7 +80,7 @@ docker run -d \
   -e PUBLIC_HOSTNAME="vless.example.com" \
   -e ECH_CONFIG="true" \
   -e EDGE_IP_VER="4" \
-  ghcr.io/rating3pro/vless-websocket-argotunnel-docker:latest
+  ghcr.io/rating3pro/vless-xhttp-argotunnel-docker:latest
 ```
 
 ### Option 3: Quick Tunnel (No Account Required)
@@ -89,10 +88,8 @@ docker run -d \
 If you do not provide `ARGO_TOKEN` and `PUBLIC_HOSTNAME`, the container will automatically start a **Quick Tunnel** using `trycloudflare.com`.
 
 ```bash
-docker run -d --name vless-quick ghcr.io/rating3pro/vless-websocket-argotunnel-docker:latest
+docker run -d --name vless-quick ghcr.io/rating3pro/vless-xhttp-argotunnel-docker:latest
 ```
-
-
 
 **⚠️ Quick Tunnel Limitations:**
 *   **Unstable**: The URL (`*.trycloudflare.com`) changes every time the container restarts.
@@ -112,7 +109,7 @@ The application is configured entirely via environment variables.
 | `ECH_CONFIG` | No | Set to `true` to enable default ECH, `false` to disable, or custom config string. | None (Disabled) |
 | `EDGE_IP_VER` | No | Set to `6` to force Cloudflare Tunnel to connect via IPv6. Set to `4` or leave empty for default. | 4 |
 
-**Note on WebSocket Path**: The WebSocket path is automatically set to `/{UUID}?ed=2048`. It cannot be manually configured. This ensures the path is unpredictable (security) and enables Early Data (performance).
+**Note on xHTTP Path**: The xHTTP path is automatically set to `/{UUID}`. It cannot be manually configured. This ensures the path is unpredictable (security).
 
 ## Post-Deployment
 
@@ -126,9 +123,9 @@ You will see output similar to the following:
 
 ```text
 [INFO] ---------------------------------------------------
-[INFO] Starting VLESS-WS-ARGO Node
+[INFO] Starting VLESS-xHTTP-ARGO Node (Xray-core)
 [INFO] UUID: d4b717cd-e8d1-4875-af98-483ec8f0b204
-[INFO] WSPATH: /d4b717cd-e8d1-4875-af98-483ec8f0b204?ed=2048
+[INFO] XHTTP Path: /d4b717cd-e8d1-4875-af98-483ec8f0b204
 [INFO] PUBLIC_HOSTNAME: vless.example.com
 [INFO] ---------------------------------------------------
 ...
@@ -136,10 +133,10 @@ You will see output similar to the following:
 [INFO] VLESS Share Links (Import to v2rayN / sing-box / Clash)
 [INFO] ---------------------------------------------------
 Server: vless.example.com (Origin)
-vless://d4b717cd...@vless.example.com:443?encryption=none&security=tls&sni=vless.example.com&fp=chrome&type=ws&host=vless.example.com&path=%2Fd4b717cd...%3Fed%3D2048#Argo-Origin
+vless://d4b717cd...@vless.example.com:443?encryption=none&security=tls&sni=vless.example.com&fp=chrome&type=xhttp&mode=auto&host=vless.example.com&path=%2Fd4b717cd...&alpn=h3#Argo-Origin
 
 Server: cf.254301.xyz
-vless://d4b717cd...@cf.254301.xyz:443?encryption=none&security=tls&sni=vless.example.com&fp=chrome&type=ws&host=vless.example.com&path=%2Fd4b717cd...%3Fed%3D2048#cf.254301.xyz-Argo
+vless://d4b717cd...@cf.254301.xyz:443?encryption=none&security=tls&sni=vless.example.com&fp=chrome&type=xhttp&mode=auto&host=vless.example.com&path=%2Fd4b717cd...&alpn=h3#cf.254301.xyz-Argo
 
 ...
 
@@ -161,13 +158,15 @@ If you prefer to configure your client manually, use the following settings:
 *   **Port**: `443`
 *   **User ID (UUID)**: The UUID from the logs
 *   **Encryption**: `none`
-*   **Network (Transport)**: `ws` (WebSocket)
-*   **WebSocket Path**: `/{UUID}?ed=2048` (e.g., `/d4b717cd-e8d1-4875-af98-483ec8f0b204?ed=2048`)
-*   **Host**: Your public hostname (e.g., `vless.example.com`)
+*   **Network (Transport)**: `xhttp`
+*   **xHTTP Settings**:
+    *   **Mode**: `auto`
+    *   **Path**: `/{UUID}` (e.g., `/d4b717cd-e8d1-4875-af98-483ec8f0b204`)
+    *   **Host**: Your public hostname (e.g., `vless.example.com`)
 *   **TLS**: Enabled
 *   **SNI**: Your public hostname (e.g., `vless.example.com`)
 *   **Fingerprint (fp)**: `chrome`
-*   **ALPN**: `http/1.1` (Optional)
+*   **ALPN**: `h3`
 
 ## CI/CD
 
@@ -181,6 +180,6 @@ The workflow builds the Docker image and pushes it to the GitHub Container Regis
 ## Security & Optimization Details
 
 *   **Zero Trust**: By using Cloudflare Tunnel, your server's IP remains hidden, and no ports are exposed to the internet.
-*   **Path Security**: The WebSocket path is tied to the UUID, effectively acting as a secondary password.
+*   **Path Security**: The xHTTP path is tied to the UUID, effectively acting as a secondary password.
 *   **CDN Optimization**: The generated links use domains known to have better routing through Cloudflare's network for certain regions, potentially improving speed and stability.
-*   **Keep-Alive**: The entrypoint script monitors both `sing-box` and `cloudflared` processes and will terminate the container if either fails, allowing Docker's restart policy to handle recovery.
+*   **Keep-Alive**: The entrypoint script monitors both `Xray` and `cloudflared` processes and will terminate the container if either fails, allowing Docker's restart policy to handle recovery.

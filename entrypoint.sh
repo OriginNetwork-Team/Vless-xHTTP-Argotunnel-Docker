@@ -118,7 +118,7 @@ if ! kill -0 $XRAY_PID > /dev/null 2>&1; then
 fi
 
 # Prepare Cloudflared Args
-CLOUDFLARED_ARGS="--protocol http2 --no-autoupdate"
+CLOUDFLARED_ARGS="--no-autoupdate"
 if [ "$EDGE_IP_VER" = "6" ]; then
     CLOUDFLARED_ARGS="$CLOUDFLARED_ARGS --edge-ip-version 6"
     log_info "Cloudflared: Using IPv6 for Edge Connection"

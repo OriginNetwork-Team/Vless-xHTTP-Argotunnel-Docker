@@ -4,7 +4,7 @@ FROM alpine:latest
 RUN apk add --no-cache ca-certificates tzdata
 
 # Copy Xray-core
-COPY --from=ghcr.io/XTLS/Xray-core:latest /usr/local/bin/xray /usr/local/bin/xray
+COPY --from=ghcr.io/xtls/xray-core:latest /usr/local/bin/xray /usr/local/bin/xray
 
 # Copy cloudflared
 COPY --from=cloudflare/cloudflared:latest /usr/local/bin/cloudflared /usr/local/bin/cloudflared

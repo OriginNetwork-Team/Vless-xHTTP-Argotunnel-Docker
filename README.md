@@ -136,10 +136,10 @@ You will see output similar to the following:
 [INFO] VLESS Share Links (Import to v2rayN / sing-box / Clash)
 [INFO] ---------------------------------------------------
 Server: vless.example.com (Origin)
-vless://d4b717cd...@vless.example.com:443?encryption=none&security=tls&sni=vless.example.com&fp=chrome&type=xhttp&mode=auto&host=vless.example.com&path=%2Fd4b717cd...&alpn=h3#Argo-Origin
+vless://d4b717cd...@vless.example.com:443?encryption=none&security=tls&sni=vless.example.com&fp=chrome&type=xhttp&mode=auto&host=vless.example.com&path=%2Fd4b717cd...&alpn=h3%2Ch2%2Chttp%2F1.1#Argo-Origin
 
 Server: cf.254301.xyz
-vless://d4b717cd...@cf.254301.xyz:443?encryption=none&security=tls&sni=vless.example.com&fp=chrome&type=xhttp&mode=auto&host=vless.example.com&path=%2Fd4b717cd...&alpn=h3#cf.254301.xyz-Argo
+vless://d4b717cd...@cf.254301.xyz:443?encryption=none&security=tls&sni=vless.example.com&fp=chrome&type=xhttp&mode=auto&host=vless.example.com&path=%2Fd4b717cd...&alpn=h3%2Ch2%2Chttp%2F1.1#cf.254301.xyz-Argo
 
 ...
 
@@ -169,7 +169,7 @@ If you prefer to configure your client manually, use the following settings:
 *   **TLS**: Enabled
 *   **SNI**: Your public hostname (e.g., `vless.example.com`)
 *   **Fingerprint (fp)**: `chrome`
-*   **ALPN**: `h3`
+*   **ALPN**: `h3,h2,http/1.1` (Recommended to include fallbacks)
 
 ## CI/CD
 

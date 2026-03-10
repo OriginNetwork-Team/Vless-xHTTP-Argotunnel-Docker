@@ -197,14 +197,14 @@ if [ -n "$PUBLIC_HOSTNAME" ]; then
     ALL_LINKS=""
 
     # Output Origin Node (Server is the Argo hostname)
-    LINK="vless://${UUID}@${PUBLIC_HOSTNAME}:443?encryption=none&security=tls&sni=${PUBLIC_HOSTNAME}&fp=chrome&type=xhttp&mode=auto&host=${PUBLIC_HOSTNAME}&path=${XHTTP_PATH_ENCODED}${ECH_STR}&alpn=h3#Argo-Origin"
+    LINK="vless://${UUID}@${PUBLIC_HOSTNAME}:443?encryption=none&security=tls&sni=${PUBLIC_HOSTNAME}&fp=chrome&type=xhttp&mode=auto&host=${PUBLIC_HOSTNAME}&path=${XHTTP_PATH_ENCODED}${ECH_STR}&alpn=h3%2Ch2%2Chttp%2F1.1#Argo-Origin"
     echo -e "${YELLOW}Server: ${PUBLIC_HOSTNAME} (Origin)${NC}"
     log_link "$LINK"
     echo ""
     ALL_LINKS="${ALL_LINKS}${LINK}\n"
 
     for DOMAIN in $DOMAINS; do
-        LINK="vless://${UUID}@${DOMAIN}:443?encryption=none&security=tls&sni=${PUBLIC_HOSTNAME}&fp=chrome&type=xhttp&mode=auto&host=${PUBLIC_HOSTNAME}&path=${XHTTP_PATH_ENCODED}${ECH_STR}&alpn=h3#${DOMAIN}-Argo"
+        LINK="vless://${UUID}@${DOMAIN}:443?encryption=none&security=tls&sni=${PUBLIC_HOSTNAME}&fp=chrome&type=xhttp&mode=auto&host=${PUBLIC_HOSTNAME}&path=${XHTTP_PATH_ENCODED}${ECH_STR}&alpn=h3%2Ch2%2Chttp%2F1.1#${DOMAIN}-Argo"
         
         echo -e "${YELLOW}Server: ${DOMAIN}${NC}"
         log_link "$LINK"

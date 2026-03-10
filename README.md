@@ -1,6 +1,6 @@
 # Vless-xHTTP-Argotunnel-Docker Deployment
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/RATING3PRO/Vless-xHTTP-Argotunnel-Docker)
+
 
 This project provides a robust, containerized solution for deploying a VLESS-xHTTP node using the **Xray-core** kernel, exposed securely via Cloudflare Tunnel (Argo). It is designed for ease of deployment on PaaS platforms or self-hosted environments without requiring public IP addresses or open ports.
 

@@ -42,6 +42,9 @@ This project provides a robust, containerized solution for deploying a VLESS-xHT
     *   **Public Hostname Configuration**:
         *   Add a public hostname (e.g., `vless.example.com`).
         *   Set **Service** to `HTTP` and **URL** to `localhost:8080`.
+3.  **Enable gRPC**: Before deploying, ensure that **gRPC** is enabled in your Cloudflare dashboard for the domain you are using.
+    *   Go to **Network** settings in Cloudflare Dashboard.
+    *   Enable **gRPC**.
 
 ## Deployment
 
